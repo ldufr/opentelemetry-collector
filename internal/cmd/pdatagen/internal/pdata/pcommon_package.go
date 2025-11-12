@@ -50,6 +50,7 @@ var pcommon = &Package{
 		int64Slice,
 		int32Slice,
 		stringSlice,
+		bytesSlice,
 	},
 }
 
@@ -335,4 +336,14 @@ var stringSlice = &primitiveSliceStruct{
 	testInterfaceOrigVal: []any{`"a"`, `"b"`, `"c"`},
 	testSetVal:           `"d"`,
 	testNewVal:           `"a", "d", "c"`,
+}
+
+var bytesSlice = &primitiveSliceStruct{
+	structName:           "BytesSlice",
+	packageName:          "pcommon",
+	itemType:             "[]byte",
+	testOrigVal:          "[]byte{1}, []byte{2}, []byte{3}",
+	testInterfaceOrigVal: []any{"[]byte{1}", "[]byte{2}", "[]byte{3}"},
+	testSetVal:           `[]byte{4}`,
+	testNewVal:           `[]byte{1}, []byte{4}, []byte{3}`,
 }

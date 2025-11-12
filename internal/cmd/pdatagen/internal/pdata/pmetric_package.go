@@ -66,6 +66,8 @@ var pmetric = &Package{
 		quantileValues,
 		exemplarSlice,
 		exemplar,
+		lazyMetricsData,
+		lazyResourceMetrics,
 	},
 	enums: []*proto.Enum{
 		aggregationTemporalityEnum,
@@ -83,6 +85,22 @@ var metrics = &messageStruct{
 			protoID:     1,
 			protoType:   proto.TypeMessage,
 			returnSlice: resourceMetricsSlice,
+		},
+	},
+	hasWrapper: true,
+}
+
+var lazyMetricsData = &messageStruct{
+	structName:    "LazyMetrics",
+	description:   "// LazyMetrics is the top-level struct that is propagated through the metrics pipeline.\n// Use NewLazyMetrics to create new instance, zero-initialized instance is not valid for use.",
+	protoName:     "LazyExportMetricsServiceRequest",
+	upstreamProto: "gootlpcollectormetrics.LazyExportMetricsServiceRequest",
+	fields: []Field{
+		&SliceField{
+			fieldName:   "ResourceMetrics",
+			protoID:     1,
+			protoType:   proto.TypeBytes,
+			returnSlice: bytesSlice,
 		},
 	},
 	hasWrapper: true,
@@ -126,6 +144,40 @@ var resourceMetrics = &messageStruct{
 			protoID:     2,
 			protoType:   proto.TypeMessage,
 			returnSlice: scopeMetricsSlice,
+		},
+		&PrimitiveField{
+			fieldName: "SchemaUrl",
+			protoID:   3,
+			protoType: proto.TypeString,
+		},
+		&SliceField{
+			fieldName:   "DeprecatedScopeMetrics",
+			protoType:   proto.TypeMessage,
+			protoID:     1000,
+			returnSlice: scopeMetricsSlice,
+			// Hide accessors for this field because it is a HACK:
+			// Workaround for istio 1.15 / envoy 1.23.1 mistakenly emitting deprecated field.
+			hideAccessors: true,
+		},
+	},
+}
+
+var lazyResourceMetrics = &messageStruct{
+	structName:    "LazyResourceMetrics",
+	description:   "// ResourceMetrics is a collection of metrics from a Resource.",
+	protoName:     "LazyResourceMetrics",
+	upstreamProto: "gootlpmetrics.LazyResourceMetrics",
+	fields: []Field{
+		&MessageField{
+			fieldName:     "Resource",
+			protoID:       1,
+			returnMessage: resource,
+		},
+		&SliceField{
+			fieldName:   "ScopeMetrics",
+			protoID:     2,
+			protoType:   proto.TypeBytes,
+			returnSlice: bytesSlice,
 		},
 		&PrimitiveField{
 			fieldName: "SchemaUrl",
