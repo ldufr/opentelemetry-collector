@@ -157,10 +157,12 @@ func (ms {{ .structName }}) CopyTo(dest {{ .structName }}) {
 	*dest.getOrig() = copy{{ .elementOriginName }}Slice(*dest.getOrig(), *ms.getOrig())
 }
 
+{{ if ne .structName "BytesSlice" -}}
 // Equal checks equality with another {{ .structName }}
 func (ms {{ .structName }}) Equal(val {{ .structName }}) bool {
 	return slices.Equal(*ms.getOrig(), *val.getOrig())
 }
+{{- end}}
 
 func copy{{ .elementOriginName }}Slice(dst, src []{{ .itemType }}) []{{ .itemType }} {
 	return append(dst[:0], src...)
