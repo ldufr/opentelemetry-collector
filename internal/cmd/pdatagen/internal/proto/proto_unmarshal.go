@@ -276,21 +276,18 @@ const unmarshalProtoBytes = `
 			ov = ProtoPool{{ .oneOfMessageName }}.Get().(*{{ .oneOfMessageName }})
 		}
 		if length != 0 {
-			ov.{{ .fieldName }} = make([]byte, length)
-			copy(ov.{{ .fieldName }}, buf[startPos:pos])
+			ov.{{ .fieldName }} = buf[startPos:pos]
 		}
 		orig.{{ .oneOfGroup }} = ov
 {{- else if .repeated -}}
 		if length != 0 {
-			orig.{{ .fieldName }} = append(orig.{{ .fieldName }}, make([]byte, length))
-			copy(orig.{{ .fieldName }}[len(orig.{{ .fieldName }}) - 1], buf[startPos:pos])
+			orig.{{ .fieldName }} = append(orig.{{ .fieldName }}, buf[startPos:pos])
 		} else {
 			orig.{{ .fieldName }} = append(orig.{{ .fieldName }}, nil)
 		}
 {{- else -}}
 		if length != 0 {
-			orig.{{ .fieldName }} = make([]byte, length)
-			copy(orig.{{ .fieldName }}, buf[startPos:pos])
+			orig.{{ .fieldName }} = buf[startPos:pos]
 		}
 {{- end }}`
 
