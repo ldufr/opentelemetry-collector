@@ -59,8 +59,14 @@ func (iss *primitiveSliceStruct) getHasOnlyInternal() bool {
 	return false
 }
 
+func trimExact(s, suffix string) string {
+	res, _ := strings.CutSuffix(s, suffix)
+	return res
+}
+
 func (iss *primitiveSliceStruct) getElementOriginName() string {
-	return upperFirst(iss.itemType)
+	res, _ := strings.CutSuffix(iss.getName(), "Slice")
+	return res
 }
 
 func (iss *primitiveSliceStruct) getElementNullable() bool {

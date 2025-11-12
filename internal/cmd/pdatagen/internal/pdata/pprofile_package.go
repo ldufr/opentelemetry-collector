@@ -299,11 +299,9 @@ var profile = &messageStruct{
 			protoID:   9,
 			protoType: proto.TypeString,
 		},
-		&SliceField{
+		&PrivateByteSlice{
 			fieldName:   "OriginalPayload",
 			protoID:     10,
-			protoType:   proto.TypeBytes,
-			returnSlice: byteSlice,
 		},
 		&SliceField{
 			fieldName:   "AttributeIndices",
