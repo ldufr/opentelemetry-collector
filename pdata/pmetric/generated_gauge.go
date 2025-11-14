@@ -7,7 +7,10 @@
 package pmetric
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 )
 
 // Gauge represents the type of a numeric metric that always exports the "current value" for every data point.
@@ -50,6 +53,46 @@ func (ms Gauge) MoveTo(dest Gauge) {
 // DataPoints returns the DataPoints associated with this Gauge.
 func (ms Gauge) DataPoints() NumberDataPointSlice {
 	return newNumberDataPointSlice(&ms.orig.DataPoints, ms.state)
+}
+
+// MarshalProto marshals Gauge into proto bytes.
+func (ms Gauge) MarshalProto() ([]byte, error) {
+	orig := ms.orig
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls Gauge from proto bytes.
+func (ms Gauge) UnmarshalProto(data []byte) error {
+	orig := ms.orig
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals Gauge into JSON bytes.
+func (ms Gauge) MarshalJSON() ([]byte, error) {
+	orig := ms.orig
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls Gauge from JSON bytes.
+func (ms Gauge) UnmarshalJSON(data []byte) error {
+	orig := ms.orig
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.

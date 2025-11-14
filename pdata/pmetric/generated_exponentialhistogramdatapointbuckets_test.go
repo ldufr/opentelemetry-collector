@@ -63,7 +63,7 @@ func TestExponentialHistogramDataPointBuckets_Offset(t *testing.T) {
 func TestExponentialHistogramDataPointBuckets_BucketCounts(t *testing.T) {
 	ms := NewExponentialHistogramDataPointBuckets()
 	assert.Equal(t, pcommon.NewUInt64Slice(), ms.BucketCounts())
-	ms.orig.BucketCounts = internal.GenTestUint64Slice()
+	ms.orig.BucketCounts = internal.GenTestUInt64Slice()
 	assert.Equal(t, pcommon.UInt64Slice(internal.GenTestUInt64SliceWrapper()), ms.BucketCounts())
 }
 

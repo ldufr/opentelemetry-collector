@@ -7,7 +7,10 @@
 package pprofile
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 	"go.opentelemetry.io/collector/pdata/pcommon"
 )
 
@@ -83,6 +86,46 @@ func (ms Sample) SetLinkIndex(v int32) {
 // TimestampsUnixNano returns the TimestampsUnixNano associated with this Sample.
 func (ms Sample) TimestampsUnixNano() pcommon.UInt64Slice {
 	return pcommon.UInt64Slice(internal.NewUInt64SliceWrapper(&ms.orig.TimestampsUnixNano, ms.state))
+}
+
+// MarshalProto marshals Sample into proto bytes.
+func (ms Sample) MarshalProto() ([]byte, error) {
+	orig := ms.orig
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls Sample from proto bytes.
+func (ms Sample) UnmarshalProto(data []byte) error {
+	orig := ms.orig
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals Sample into JSON bytes.
+func (ms Sample) MarshalJSON() ([]byte, error) {
+	orig := ms.orig
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls Sample from JSON bytes.
+func (ms Sample) UnmarshalJSON(data []byte) error {
+	orig := ms.orig
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.

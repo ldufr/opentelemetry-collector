@@ -7,7 +7,10 @@
 package plog
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 )
 
 // Logs is the top-level struct that is propagated through the logs pipeline.
@@ -48,6 +51,46 @@ func (ms Logs) MoveTo(dest Logs) {
 // ResourceLogs returns the ResourceLogs associated with this Logs.
 func (ms Logs) ResourceLogs() ResourceLogsSlice {
 	return newResourceLogsSlice(&ms.getOrig().ResourceLogs, ms.getState())
+}
+
+// MarshalProto marshals Logs into proto bytes.
+func (ms Logs) MarshalProto() ([]byte, error) {
+	orig := ms.getOrig()
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls Logs from proto bytes.
+func (ms Logs) UnmarshalProto(data []byte) error {
+	orig := ms.getOrig()
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals Logs into JSON bytes.
+func (ms Logs) MarshalJSON() ([]byte, error) {
+	orig := ms.getOrig()
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls Logs from JSON bytes.
+func (ms Logs) UnmarshalJSON(data []byte) error {
+	orig := ms.getOrig()
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.

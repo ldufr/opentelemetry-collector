@@ -7,7 +7,10 @@
 package pmetric
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 )
 
 // SummaryDataPointValueAtQuantile is a quantile value within a Summary data point.
@@ -67,6 +70,46 @@ func (ms SummaryDataPointValueAtQuantile) Value() float64 {
 func (ms SummaryDataPointValueAtQuantile) SetValue(v float64) {
 	ms.state.AssertMutable()
 	ms.orig.Value = v
+}
+
+// MarshalProto marshals SummaryDataPointValueAtQuantile into proto bytes.
+func (ms SummaryDataPointValueAtQuantile) MarshalProto() ([]byte, error) {
+	orig := ms.orig
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls SummaryDataPointValueAtQuantile from proto bytes.
+func (ms SummaryDataPointValueAtQuantile) UnmarshalProto(data []byte) error {
+	orig := ms.orig
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals SummaryDataPointValueAtQuantile into JSON bytes.
+func (ms SummaryDataPointValueAtQuantile) MarshalJSON() ([]byte, error) {
+	orig := ms.orig
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls SummaryDataPointValueAtQuantile from JSON bytes.
+func (ms SummaryDataPointValueAtQuantile) UnmarshalJSON(data []byte) error {
+	orig := ms.orig
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.

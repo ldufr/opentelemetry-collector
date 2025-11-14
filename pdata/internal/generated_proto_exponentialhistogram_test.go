@@ -199,7 +199,7 @@ func genTestFailingUnmarshalProtoValuesExponentialHistogram() map[string][]byte 
 func genTestEncodingValuesExponentialHistogram() map[string]*ExponentialHistogram {
 	return map[string]*ExponentialHistogram{
 		"empty":                       NewExponentialHistogram(),
-		"DataPoints/test":             {DataPoints: []*ExponentialHistogramDataPoint{{}, GenTestExponentialHistogramDataPoint()}},
+		"DataPoints/test":             {DataPoints: []ExponentialHistogramDataPoint{{}, *GenTestExponentialHistogramDataPoint()}},
 		"AggregationTemporality/test": {AggregationTemporality: AggregationTemporality(13)},
 	}
 }

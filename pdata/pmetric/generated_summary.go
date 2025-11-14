@@ -7,7 +7,10 @@
 package pmetric
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 )
 
 // Summary represents the type of a metric that is calculated by aggregating as a Summary of all reported double measurements over a time interval.
@@ -50,6 +53,46 @@ func (ms Summary) MoveTo(dest Summary) {
 // DataPoints returns the DataPoints associated with this Summary.
 func (ms Summary) DataPoints() SummaryDataPointSlice {
 	return newSummaryDataPointSlice(&ms.orig.DataPoints, ms.state)
+}
+
+// MarshalProto marshals Summary into proto bytes.
+func (ms Summary) MarshalProto() ([]byte, error) {
+	orig := ms.orig
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls Summary from proto bytes.
+func (ms Summary) UnmarshalProto(data []byte) error {
+	orig := ms.orig
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals Summary into JSON bytes.
+func (ms Summary) MarshalJSON() ([]byte, error) {
+	orig := ms.orig
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls Summary from JSON bytes.
+func (ms Summary) UnmarshalJSON(data []byte) error {
+	orig := ms.orig
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.

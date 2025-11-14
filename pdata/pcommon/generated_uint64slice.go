@@ -36,13 +36,13 @@ func NewUInt64Slice() UInt64Slice {
 
 // AsRaw returns a copy of the []uint64 slice.
 func (ms UInt64Slice) AsRaw() []uint64 {
-	return copyUint64Slice(nil, *ms.getOrig())
+	return copyUInt64Slice(nil, *ms.getOrig())
 }
 
 // FromRaw copies raw []uint64 into the slice UInt64Slice.
 func (ms UInt64Slice) FromRaw(val []uint64) {
 	ms.getState().AssertMutable()
-	*ms.getOrig() = copyUint64Slice(*ms.getOrig(), val)
+	*ms.getOrig() = copyUInt64Slice(*ms.getOrig(), val)
 }
 
 // Len returns length of the []uint64 slice value.
@@ -155,7 +155,7 @@ func (ms UInt64Slice) CopyTo(dest UInt64Slice) {
 	if ms.getOrig() == dest.getOrig() {
 		return
 	}
-	*dest.getOrig() = copyUint64Slice(*dest.getOrig(), *ms.getOrig())
+	*dest.getOrig() = copyUInt64Slice(*dest.getOrig(), *ms.getOrig())
 }
 
 // Equal checks equality with another UInt64Slice
@@ -163,6 +163,6 @@ func (ms UInt64Slice) Equal(val UInt64Slice) bool {
 	return slices.Equal(*ms.getOrig(), *val.getOrig())
 }
 
-func copyUint64Slice(dst, src []uint64) []uint64 {
+func copyUInt64Slice(dst, src []uint64) []uint64 {
 	return append(dst[:0], src...)
 }

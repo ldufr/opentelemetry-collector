@@ -7,7 +7,10 @@
 package pprofile
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 	"go.opentelemetry.io/collector/pdata/pcommon"
 )
 
@@ -75,6 +78,46 @@ func (ms KeyValueAndUnit) UnitStrindex() int32 {
 func (ms KeyValueAndUnit) SetUnitStrindex(v int32) {
 	ms.state.AssertMutable()
 	ms.orig.UnitStrindex = v
+}
+
+// MarshalProto marshals KeyValueAndUnit into proto bytes.
+func (ms KeyValueAndUnit) MarshalProto() ([]byte, error) {
+	orig := ms.orig
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls KeyValueAndUnit from proto bytes.
+func (ms KeyValueAndUnit) UnmarshalProto(data []byte) error {
+	orig := ms.orig
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals KeyValueAndUnit into JSON bytes.
+func (ms KeyValueAndUnit) MarshalJSON() ([]byte, error) {
+	orig := ms.orig
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls KeyValueAndUnit from JSON bytes.
+func (ms KeyValueAndUnit) UnmarshalJSON(data []byte) error {
+	orig := ms.orig
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.

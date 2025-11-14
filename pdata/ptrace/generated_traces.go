@@ -7,7 +7,10 @@
 package ptrace
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 )
 
 // Traces is the top-level struct that is propagated through the traces pipeline.
@@ -48,6 +51,46 @@ func (ms Traces) MoveTo(dest Traces) {
 // ResourceSpans returns the ResourceSpans associated with this Traces.
 func (ms Traces) ResourceSpans() ResourceSpansSlice {
 	return newResourceSpansSlice(&ms.getOrig().ResourceSpans, ms.getState())
+}
+
+// MarshalProto marshals Traces into proto bytes.
+func (ms Traces) MarshalProto() ([]byte, error) {
+	orig := ms.getOrig()
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls Traces from proto bytes.
+func (ms Traces) UnmarshalProto(data []byte) error {
+	orig := ms.getOrig()
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals Traces into JSON bytes.
+func (ms Traces) MarshalJSON() ([]byte, error) {
+	orig := ms.getOrig()
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls Traces from JSON bytes.
+func (ms Traces) UnmarshalJSON(data []byte) error {
+	orig := ms.getOrig()
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.

@@ -7,7 +7,10 @@
 package pprofileotlp
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 )
 
 // ExportResponse represents the response for gRPC/HTTP client/server.
@@ -50,6 +53,46 @@ func (ms ExportResponse) MoveTo(dest ExportResponse) {
 // PartialSuccess returns the partialsuccess associated with this ExportResponse.
 func (ms ExportResponse) PartialSuccess() ExportPartialSuccess {
 	return newExportPartialSuccess(&ms.orig.PartialSuccess, ms.state)
+}
+
+// MarshalProto marshals ExportResponse into proto bytes.
+func (ms ExportResponse) MarshalProto() ([]byte, error) {
+	orig := ms.orig
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls ExportResponse from proto bytes.
+func (ms ExportResponse) UnmarshalProto(data []byte) error {
+	orig := ms.orig
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals ExportResponse into JSON bytes.
+func (ms ExportResponse) MarshalJSON() ([]byte, error) {
+	orig := ms.orig
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls ExportResponse from JSON bytes.
+func (ms ExportResponse) UnmarshalJSON(data []byte) error {
+	orig := ms.orig
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.

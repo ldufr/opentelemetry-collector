@@ -7,7 +7,10 @@
 package pprofile
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 )
 
 // Profiles is the top-level struct that is propagated through the profiles pipeline.
@@ -53,6 +56,46 @@ func (ms Profiles) ResourceProfiles() ResourceProfilesSlice {
 // Dictionary returns the dictionary associated with this Profiles.
 func (ms Profiles) Dictionary() ProfilesDictionary {
 	return newProfilesDictionary(&ms.getOrig().Dictionary, ms.getState())
+}
+
+// MarshalProto marshals Profiles into proto bytes.
+func (ms Profiles) MarshalProto() ([]byte, error) {
+	orig := ms.getOrig()
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls Profiles from proto bytes.
+func (ms Profiles) UnmarshalProto(data []byte) error {
+	orig := ms.getOrig()
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals Profiles into JSON bytes.
+func (ms Profiles) MarshalJSON() ([]byte, error) {
+	orig := ms.getOrig()
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls Profiles from JSON bytes.
+func (ms Profiles) UnmarshalJSON(data []byte) error {
+	orig := ms.getOrig()
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.

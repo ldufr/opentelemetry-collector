@@ -79,7 +79,7 @@ func TestSample_LinkIndex(t *testing.T) {
 func TestSample_TimestampsUnixNano(t *testing.T) {
 	ms := NewSample()
 	assert.Equal(t, pcommon.NewUInt64Slice(), ms.TimestampsUnixNano())
-	ms.orig.TimestampsUnixNano = internal.GenTestUint64Slice()
+	ms.orig.TimestampsUnixNano = internal.GenTestUInt64Slice()
 	assert.Equal(t, pcommon.UInt64Slice(internal.GenTestUInt64SliceWrapper()), ms.TimestampsUnixNano())
 }
 

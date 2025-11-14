@@ -7,7 +7,10 @@
 package pcommon
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 )
 
 // Resource is a message representing the resource information.
@@ -58,6 +61,46 @@ func (ms Resource) DroppedAttributesCount() uint32 {
 func (ms Resource) SetDroppedAttributesCount(v uint32) {
 	ms.getState().AssertMutable()
 	ms.getOrig().DroppedAttributesCount = v
+}
+
+// MarshalProto marshals Resource into proto bytes.
+func (ms Resource) MarshalProto() ([]byte, error) {
+	orig := ms.getOrig()
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls Resource from proto bytes.
+func (ms Resource) UnmarshalProto(data []byte) error {
+	orig := ms.getOrig()
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals Resource into JSON bytes.
+func (ms Resource) MarshalJSON() ([]byte, error) {
+	orig := ms.getOrig()
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls Resource from JSON bytes.
+func (ms Resource) UnmarshalJSON(data []byte) error {
+	orig := ms.getOrig()
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.

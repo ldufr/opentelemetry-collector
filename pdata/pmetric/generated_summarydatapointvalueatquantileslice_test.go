@@ -8,7 +8,6 @@ package pmetric
 
 import (
 	"testing"
-	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 
@@ -18,7 +17,7 @@ import (
 func TestSummaryDataPointValueAtQuantileSlice(t *testing.T) {
 	es := NewSummaryDataPointValueAtQuantileSlice()
 	assert.Equal(t, 0, es.Len())
-	es = newSummaryDataPointValueAtQuantileSlice(&[]*internal.SummaryDataPointValueAtQuantile{}, internal.NewState())
+	es = newSummaryDataPointValueAtQuantileSlice(&[]internal.SummaryDataPointValueAtQuantile{}, internal.NewState())
 	assert.Equal(t, 0, es.Len())
 
 	emptyVal := NewSummaryDataPointValueAtQuantile()
@@ -26,7 +25,7 @@ func TestSummaryDataPointValueAtQuantileSlice(t *testing.T) {
 	for i := 0; i < 7; i++ {
 		es.AppendEmpty()
 		assert.Equal(t, emptyVal, es.At(i))
-		(*es.orig)[i] = internal.GenTestSummaryDataPointValueAtQuantile()
+		(*es.orig)[i] = *internal.GenTestSummaryDataPointValueAtQuantile()
 		assert.Equal(t, testVal, es.At(i))
 	}
 	assert.Equal(t, 7, es.Len())
@@ -35,7 +34,7 @@ func TestSummaryDataPointValueAtQuantileSlice(t *testing.T) {
 func TestSummaryDataPointValueAtQuantileSliceReadOnly(t *testing.T) {
 	sharedState := internal.NewState()
 	sharedState.MarkReadOnly()
-	es := newSummaryDataPointValueAtQuantileSlice(&[]*internal.SummaryDataPointValueAtQuantile{}, sharedState)
+	es := newSummaryDataPointValueAtQuantileSlice(&[]internal.SummaryDataPointValueAtQuantile{}, sharedState)
 	assert.Equal(t, 0, es.Len())
 	assert.Panics(t, func() { es.AppendEmpty() })
 	assert.Panics(t, func() { es.EnsureCapacity(2) })
@@ -143,24 +142,8 @@ func TestSummaryDataPointValueAtQuantileSliceAll(t *testing.T) {
 	assert.Equal(t, ms.Len(), c, "All elements should have been visited")
 }
 
-func TestSummaryDataPointValueAtQuantileSlice_Sort(t *testing.T) {
-	es := generateTestSummaryDataPointValueAtQuantileSlice()
-	es.Sort(func(a, b SummaryDataPointValueAtQuantile) bool {
-		return uintptr(unsafe.Pointer(a.orig)) < uintptr(unsafe.Pointer(b.orig))
-	})
-	for i := 1; i < es.Len(); i++ {
-		assert.Less(t, uintptr(unsafe.Pointer(es.At(i-1).orig)), uintptr(unsafe.Pointer(es.At(i).orig)))
-	}
-	es.Sort(func(a, b SummaryDataPointValueAtQuantile) bool {
-		return uintptr(unsafe.Pointer(a.orig)) > uintptr(unsafe.Pointer(b.orig))
-	})
-	for i := 1; i < es.Len(); i++ {
-		assert.Greater(t, uintptr(unsafe.Pointer(es.At(i-1).orig)), uintptr(unsafe.Pointer(es.At(i).orig)))
-	}
-}
-
 func generateTestSummaryDataPointValueAtQuantileSlice() SummaryDataPointValueAtQuantileSlice {
 	ms := NewSummaryDataPointValueAtQuantileSlice()
-	*ms.orig = internal.GenTestSummaryDataPointValueAtQuantilePtrSlice()
+	*ms.orig = internal.GenTestSummaryDataPointValueAtQuantileSlice()
 	return ms
 }

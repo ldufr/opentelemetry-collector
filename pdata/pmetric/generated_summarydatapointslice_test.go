@@ -8,7 +8,6 @@ package pmetric
 
 import (
 	"testing"
-	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 
@@ -18,7 +17,7 @@ import (
 func TestSummaryDataPointSlice(t *testing.T) {
 	es := NewSummaryDataPointSlice()
 	assert.Equal(t, 0, es.Len())
-	es = newSummaryDataPointSlice(&[]*internal.SummaryDataPoint{}, internal.NewState())
+	es = newSummaryDataPointSlice(&[]internal.SummaryDataPoint{}, internal.NewState())
 	assert.Equal(t, 0, es.Len())
 
 	emptyVal := NewSummaryDataPoint()
@@ -26,7 +25,7 @@ func TestSummaryDataPointSlice(t *testing.T) {
 	for i := 0; i < 7; i++ {
 		es.AppendEmpty()
 		assert.Equal(t, emptyVal, es.At(i))
-		(*es.orig)[i] = internal.GenTestSummaryDataPoint()
+		(*es.orig)[i] = *internal.GenTestSummaryDataPoint()
 		assert.Equal(t, testVal, es.At(i))
 	}
 	assert.Equal(t, 7, es.Len())
@@ -35,7 +34,7 @@ func TestSummaryDataPointSlice(t *testing.T) {
 func TestSummaryDataPointSliceReadOnly(t *testing.T) {
 	sharedState := internal.NewState()
 	sharedState.MarkReadOnly()
-	es := newSummaryDataPointSlice(&[]*internal.SummaryDataPoint{}, sharedState)
+	es := newSummaryDataPointSlice(&[]internal.SummaryDataPoint{}, sharedState)
 	assert.Equal(t, 0, es.Len())
 	assert.Panics(t, func() { es.AppendEmpty() })
 	assert.Panics(t, func() { es.EnsureCapacity(2) })
@@ -143,24 +142,8 @@ func TestSummaryDataPointSliceAll(t *testing.T) {
 	assert.Equal(t, ms.Len(), c, "All elements should have been visited")
 }
 
-func TestSummaryDataPointSlice_Sort(t *testing.T) {
-	es := generateTestSummaryDataPointSlice()
-	es.Sort(func(a, b SummaryDataPoint) bool {
-		return uintptr(unsafe.Pointer(a.orig)) < uintptr(unsafe.Pointer(b.orig))
-	})
-	for i := 1; i < es.Len(); i++ {
-		assert.Less(t, uintptr(unsafe.Pointer(es.At(i-1).orig)), uintptr(unsafe.Pointer(es.At(i).orig)))
-	}
-	es.Sort(func(a, b SummaryDataPoint) bool {
-		return uintptr(unsafe.Pointer(a.orig)) > uintptr(unsafe.Pointer(b.orig))
-	})
-	for i := 1; i < es.Len(); i++ {
-		assert.Greater(t, uintptr(unsafe.Pointer(es.At(i-1).orig)), uintptr(unsafe.Pointer(es.At(i).orig)))
-	}
-}
-
 func generateTestSummaryDataPointSlice() SummaryDataPointSlice {
 	ms := NewSummaryDataPointSlice()
-	*ms.orig = internal.GenTestSummaryDataPointPtrSlice()
+	*ms.orig = internal.GenTestSummaryDataPointSlice()
 	return ms
 }

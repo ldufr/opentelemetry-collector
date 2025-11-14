@@ -7,7 +7,10 @@
 package pmetric
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 	"go.opentelemetry.io/collector/pdata/pcommon"
 )
 
@@ -179,6 +182,46 @@ func (ms HistogramDataPoint) SetMax(v float64) {
 func (ms HistogramDataPoint) RemoveMax() {
 	ms.state.AssertMutable()
 	ms.orig.Max_ = nil
+}
+
+// MarshalProto marshals HistogramDataPoint into proto bytes.
+func (ms HistogramDataPoint) MarshalProto() ([]byte, error) {
+	orig := ms.orig
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls HistogramDataPoint from proto bytes.
+func (ms HistogramDataPoint) UnmarshalProto(data []byte) error {
+	orig := ms.orig
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals HistogramDataPoint into JSON bytes.
+func (ms HistogramDataPoint) MarshalJSON() ([]byte, error) {
+	orig := ms.orig
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls HistogramDataPoint from JSON bytes.
+func (ms HistogramDataPoint) UnmarshalJSON(data []byte) error {
+	orig := ms.orig
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.

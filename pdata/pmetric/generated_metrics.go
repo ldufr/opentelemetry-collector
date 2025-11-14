@@ -7,7 +7,10 @@
 package pmetric
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 )
 
 // Metrics is the top-level struct that is propagated through the metrics pipeline.
@@ -48,6 +51,46 @@ func (ms Metrics) MoveTo(dest Metrics) {
 // ResourceMetrics returns the ResourceMetrics associated with this Metrics.
 func (ms Metrics) ResourceMetrics() ResourceMetricsSlice {
 	return newResourceMetricsSlice(&ms.getOrig().ResourceMetrics, ms.getState())
+}
+
+// MarshalProto marshals Metrics into proto bytes.
+func (ms Metrics) MarshalProto() ([]byte, error) {
+	orig := ms.getOrig()
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls Metrics from proto bytes.
+func (ms Metrics) UnmarshalProto(data []byte) error {
+	orig := ms.getOrig()
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals Metrics into JSON bytes.
+func (ms Metrics) MarshalJSON() ([]byte, error) {
+	orig := ms.getOrig()
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls Metrics from JSON bytes.
+func (ms Metrics) UnmarshalJSON(data []byte) error {
+	orig := ms.getOrig()
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.

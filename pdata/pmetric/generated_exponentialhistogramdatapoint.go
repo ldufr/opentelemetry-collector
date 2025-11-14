@@ -7,7 +7,10 @@
 package pmetric
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 	"go.opentelemetry.io/collector/pdata/pcommon"
 )
 
@@ -215,6 +218,46 @@ func (ms ExponentialHistogramDataPoint) ZeroThreshold() float64 {
 func (ms ExponentialHistogramDataPoint) SetZeroThreshold(v float64) {
 	ms.state.AssertMutable()
 	ms.orig.ZeroThreshold = v
+}
+
+// MarshalProto marshals ExponentialHistogramDataPoint into proto bytes.
+func (ms ExponentialHistogramDataPoint) MarshalProto() ([]byte, error) {
+	orig := ms.orig
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls ExponentialHistogramDataPoint from proto bytes.
+func (ms ExponentialHistogramDataPoint) UnmarshalProto(data []byte) error {
+	orig := ms.orig
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals ExponentialHistogramDataPoint into JSON bytes.
+func (ms ExponentialHistogramDataPoint) MarshalJSON() ([]byte, error) {
+	orig := ms.orig
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls ExponentialHistogramDataPoint from JSON bytes.
+func (ms ExponentialHistogramDataPoint) UnmarshalJSON(data []byte) error {
+	orig := ms.orig
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.

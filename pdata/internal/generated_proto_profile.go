@@ -520,7 +520,7 @@ func (orig *Profile) UnmarshalProto(buf []byte) error {
 				return err
 			}
 			startPos := pos - length
-			orig.OriginalPayloadFormat = string(buf[startPos:pos])
+			orig.OriginalPayloadFormat = proto.YoloString(buf[startPos:pos])
 
 		case 10:
 			if wireType != proto.WireTypeLen {
@@ -533,8 +533,7 @@ func (orig *Profile) UnmarshalProto(buf []byte) error {
 			}
 			startPos := pos - length
 			if length != 0 {
-				orig.OriginalPayload = make([]byte, length)
-				copy(orig.OriginalPayload, buf[startPos:pos])
+				orig.OriginalPayload = buf[startPos:pos]
 			}
 		case 11:
 			switch wireType {

@@ -7,7 +7,10 @@
 package pprofile
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 	"go.opentelemetry.io/collector/pdata/pcommon"
 )
 
@@ -81,6 +84,46 @@ func (ms ProfilesDictionary) AttributeTable() KeyValueAndUnitSlice {
 // StackTable returns the StackTable associated with this ProfilesDictionary.
 func (ms ProfilesDictionary) StackTable() StackSlice {
 	return newStackSlice(&ms.orig.StackTable, ms.state)
+}
+
+// MarshalProto marshals ProfilesDictionary into proto bytes.
+func (ms ProfilesDictionary) MarshalProto() ([]byte, error) {
+	orig := ms.orig
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls ProfilesDictionary from proto bytes.
+func (ms ProfilesDictionary) UnmarshalProto(data []byte) error {
+	orig := ms.orig
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals ProfilesDictionary into JSON bytes.
+func (ms ProfilesDictionary) MarshalJSON() ([]byte, error) {
+	orig := ms.orig
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls ProfilesDictionary from JSON bytes.
+func (ms ProfilesDictionary) UnmarshalJSON(data []byte) error {
+	orig := ms.orig
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.

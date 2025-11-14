@@ -7,7 +7,10 @@
 package entity
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 	"go.opentelemetry.io/collector/pdata/pcommon"
 )
 
@@ -73,6 +76,46 @@ func (ms EntityRef) IdKeys() pcommon.StringSlice {
 // DescriptionKeys returns the DescriptionKeys associated with this EntityRef.
 func (ms EntityRef) DescriptionKeys() pcommon.StringSlice {
 	return pcommon.StringSlice(internal.NewStringSliceWrapper(&ms.getOrig().DescriptionKeys, ms.getState()))
+}
+
+// MarshalProto marshals EntityRef into proto bytes.
+func (ms EntityRef) MarshalProto() ([]byte, error) {
+	orig := ms.getOrig()
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls EntityRef from proto bytes.
+func (ms EntityRef) UnmarshalProto(data []byte) error {
+	orig := ms.getOrig()
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals EntityRef into JSON bytes.
+func (ms EntityRef) MarshalJSON() ([]byte, error) {
+	orig := ms.getOrig()
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls EntityRef from JSON bytes.
+func (ms EntityRef) UnmarshalJSON(data []byte) error {
+	orig := ms.getOrig()
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.

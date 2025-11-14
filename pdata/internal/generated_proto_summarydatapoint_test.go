@@ -214,7 +214,7 @@ func genTestEncodingValuesSummaryDataPoint() map[string]*SummaryDataPoint {
 		"TimeUnixNano/test":      {TimeUnixNano: uint64(13)},
 		"Count/test":             {Count: uint64(13)},
 		"Sum/test":               {Sum: float64(3.1415926)},
-		"QuantileValues/test":    {QuantileValues: []*SummaryDataPointValueAtQuantile{{}, GenTestSummaryDataPointValueAtQuantile()}},
+		"QuantileValues/test":    {QuantileValues: []SummaryDataPointValueAtQuantile{{}, *GenTestSummaryDataPointValueAtQuantile()}},
 		"Flags/test":             {Flags: uint32(13)},
 	}
 }

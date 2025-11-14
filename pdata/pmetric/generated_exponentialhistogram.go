@@ -7,7 +7,10 @@
 package pmetric
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 )
 
 // ExponentialHistogram represents the type of a metric that is calculated by aggregating
@@ -62,6 +65,46 @@ func (ms ExponentialHistogram) AggregationTemporality() AggregationTemporality {
 func (ms ExponentialHistogram) SetAggregationTemporality(v AggregationTemporality) {
 	ms.state.AssertMutable()
 	ms.orig.AggregationTemporality = internal.AggregationTemporality(v)
+}
+
+// MarshalProto marshals ExponentialHistogram into proto bytes.
+func (ms ExponentialHistogram) MarshalProto() ([]byte, error) {
+	orig := ms.orig
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls ExponentialHistogram from proto bytes.
+func (ms ExponentialHistogram) UnmarshalProto(data []byte) error {
+	orig := ms.orig
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals ExponentialHistogram into JSON bytes.
+func (ms ExponentialHistogram) MarshalJSON() ([]byte, error) {
+	orig := ms.orig
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls ExponentialHistogram from JSON bytes.
+func (ms ExponentialHistogram) UnmarshalJSON(data []byte) error {
+	orig := ms.orig
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.

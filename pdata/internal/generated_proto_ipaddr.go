@@ -215,8 +215,7 @@ func (orig *IPAddr) UnmarshalProto(buf []byte) error {
 			}
 			startPos := pos - length
 			if length != 0 {
-				orig.IP = make([]byte, length)
-				copy(orig.IP, buf[startPos:pos])
+				orig.IP = buf[startPos:pos]
 			}
 
 		case 2:
@@ -229,7 +228,7 @@ func (orig *IPAddr) UnmarshalProto(buf []byte) error {
 				return err
 			}
 			startPos := pos - length
-			orig.Zone = string(buf[startPos:pos])
+			orig.Zone = proto.YoloString(buf[startPos:pos])
 		default:
 			pos, err = proto.ConsumeUnknown(buf, pos, wireType)
 			if err != nil {

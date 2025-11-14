@@ -7,7 +7,10 @@
 package pcommon
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 )
 
 // InstrumentationScope is a message representing the instrumentation scope information.
@@ -80,6 +83,46 @@ func (ms InstrumentationScope) DroppedAttributesCount() uint32 {
 func (ms InstrumentationScope) SetDroppedAttributesCount(v uint32) {
 	ms.getState().AssertMutable()
 	ms.getOrig().DroppedAttributesCount = v
+}
+
+// MarshalProto marshals InstrumentationScope into proto bytes.
+func (ms InstrumentationScope) MarshalProto() ([]byte, error) {
+	orig := ms.getOrig()
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls InstrumentationScope from proto bytes.
+func (ms InstrumentationScope) UnmarshalProto(data []byte) error {
+	orig := ms.getOrig()
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals InstrumentationScope into JSON bytes.
+func (ms InstrumentationScope) MarshalJSON() ([]byte, error) {
+	orig := ms.getOrig()
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls InstrumentationScope from JSON bytes.
+func (ms InstrumentationScope) UnmarshalJSON(data []byte) error {
+	orig := ms.getOrig()
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.

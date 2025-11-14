@@ -28,6 +28,6 @@ func GenTestUInt64SliceWrapper() UInt64SliceWrapper {
 	return NewUInt64SliceWrapper(&orig, NewState())
 }
 
-func GenTestUint64Slice() []uint64 {
+func GenTestUInt64Slice() []uint64 {
 	return []uint64{1, 2, 3}
 }

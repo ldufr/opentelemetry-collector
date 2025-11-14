@@ -197,6 +197,6 @@ func genTestFailingUnmarshalProtoValuesSummary() map[string][]byte {
 func genTestEncodingValuesSummary() map[string]*Summary {
 	return map[string]*Summary{
 		"empty":           NewSummary(),
-		"DataPoints/test": {DataPoints: []*SummaryDataPoint{{}, GenTestSummaryDataPoint()}},
+		"DataPoints/test": {DataPoints: []SummaryDataPoint{{}, *GenTestSummaryDataPoint()}},
 	}
 }

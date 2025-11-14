@@ -7,7 +7,10 @@
 package pmetric
 
 import (
+	"slices"
+
 	"go.opentelemetry.io/collector/pdata/internal"
+	"go.opentelemetry.io/collector/pdata/internal/json"
 )
 
 // Histogram represents the type of a metric that is calculated by aggregating as a Histogram of all reported measurements over a time interval.
@@ -61,6 +64,46 @@ func (ms Histogram) AggregationTemporality() AggregationTemporality {
 func (ms Histogram) SetAggregationTemporality(v AggregationTemporality) {
 	ms.state.AssertMutable()
 	ms.orig.AggregationTemporality = internal.AggregationTemporality(v)
+}
+
+// MarshalProto marshals Histogram into proto bytes.
+func (ms Histogram) MarshalProto() ([]byte, error) {
+	orig := ms.orig
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls Histogram from proto bytes.
+func (ms Histogram) UnmarshalProto(data []byte) error {
+	orig := ms.orig
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals Histogram into JSON bytes.
+func (ms Histogram) MarshalJSON() ([]byte, error) {
+	orig := ms.orig
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls Histogram from JSON bytes.
+func (ms Histogram) UnmarshalJSON(data []byte) error {
+	orig := ms.orig
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
 }
 
 // CopyTo copies all properties from the current struct overriding the destination.
