@@ -128,14 +128,22 @@ func (p *Package) GenerateProtoMessageFiles() error {
 		if pm == nil {
 			continue
 		}
+		saveImports := slices.Clone(p.info.imports)
+		p.info.imports = slices.DeleteFunc(p.info.imports, func(s string) bool {
+			return slices.Contains(nonInternalDeps, s)
+		})
 		saveTestImports := slices.Clone(p.info.testImports)
 		p.info.testImports = slices.DeleteFunc(p.info.testImports, func(s string) bool {
 			return slices.Contains(nonInternalDeps, s)
 		})
 		path := filepath.Join("pdata", "internal", "generated_proto_"+strings.ToLower(s.getOriginName())+".go")
+		if strings.ToLower(s.getOriginName()) == "anyvalue" {
+			fmt.Printf("%v\n", p.info.imports)
+		}
 		if err := os.WriteFile(path, pm.GenerateMessage(p.info.imports, p.info.testImports), 0o600); err != nil {
 			return err
 		}
+		p.info.imports = saveImports
 		p.info.testImports = saveTestImports
 	}
 	return nil

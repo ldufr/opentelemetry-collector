@@ -300,8 +300,8 @@ var profile = &messageStruct{
 			protoType: proto.TypeString,
 		},
 		&PrivateByteSlice{
-			fieldName:   "OriginalPayload",
-			protoID:     10,
+			fieldName: "OriginalPayload",
+			protoID:   10,
 		},
 		&SliceField{
 			fieldName:   "AttributeIndices",
