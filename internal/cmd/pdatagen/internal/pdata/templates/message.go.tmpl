@@ -61,6 +61,64 @@ func (ms {{ .structName }}) MoveTo(dest {{ .structName }}) {
 {{ .GenerateAccessors $.messageStruct }}
 {{ end }}
 
+
+
+// MarshalProto marshals {{ .structName }} into proto bytes.
+func (ms {{ .structName }}) MarshalProto() ([]byte, error) {
+	{{- if .hasWrapper }}
+	orig := ms.getOrig()
+	{{- else }}
+	orig := ms.orig
+	{{- end}}
+	size := orig.SizeProto()
+	buf := make([]byte, size)
+	_ = orig.MarshalProto(buf)
+	return buf, nil
+}
+
+// UnmarshalProto unmarshalls {{ .structName }} from proto bytes.
+func (ms {{ .structName }}) UnmarshalProto(data []byte) error {
+	{{- if .hasWrapper }}
+	orig := ms.getOrig()
+	{{- else }}
+	orig := ms.orig
+	{{- end}}
+	err := orig.UnmarshalProto(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON marshals {{ .structName }} into JSON bytes.
+func (ms {{ .structName }}) MarshalJSON() ([]byte, error) {
+	{{- if .hasWrapper }}
+	orig := ms.getOrig()
+	{{- else }}
+	orig := ms.orig
+	{{- end}}
+	dest := json.BorrowStream(nil)
+	defer json.ReturnStream(dest)
+	orig.MarshalJSON(dest)
+	if dest.Error() != nil {
+		return nil, dest.Error()
+	}
+	return slices.Clone(dest.Buffer()), nil
+}
+
+// UnmarshalJSON unmarshalls {{ .structName }} from JSON bytes.
+func (ms {{ .structName }}) UnmarshalJSON(data []byte) error {
+	{{- if .hasWrapper }}
+	orig := ms.getOrig()
+	{{- else }}
+	orig := ms.orig
+	{{- end}}
+	iter := json.BorrowIterator(data)
+	defer json.ReturnIterator(iter)
+	orig.UnmarshalJSON(iter)
+	return iter.Error()
+}
+
 // CopyTo copies all properties from the current struct overriding the destination.
 func (ms {{ .structName }}) CopyTo(dest {{ .structName }}) {
 	dest.{{ .stateAccessor }}.AssertMutable()
