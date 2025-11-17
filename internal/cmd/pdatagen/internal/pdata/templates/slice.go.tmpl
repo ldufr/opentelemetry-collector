@@ -57,10 +57,22 @@ func (es {{ .structName }}) Len() int {
 //       e := es.At(i)
 //       ... // Do something with the element
 //   }
+{{ if not .lazy -}}
 func (es {{ .structName }}) At(i int) {{ .elementName }} {
 	return new{{ .elementName }}({{ if not .elementNullable }}&{{ end }}(*es.{{ .origAccessor }})[i], es.{{ .stateAccessor }})
 }
+{{- else -}}
+func (es {{ .structName }}) At(i int) {{ .elementName }} {
+	var buf internal.{{ .elementOriginName }}
+	res, err := (*es.{{ .origAccessor }})[i].FinishUnmarshal(&buf.{{ .elementName }})
+	if err != nil {
+		panic(err)
+	}
+	return new{{ .elementName }}(res, es.{{ .stateAccessor }})
+}
+{{- end }}
 
+{{ if not .lazy -}}
 // All returns an iterator over index-value pairs in the slice.
 //
 //	for i, v := range es.All() {
@@ -75,6 +87,7 @@ func (es {{ .structName }}) All() iter.Seq2[int, {{ .elementName }}] {
 		}
 	}
 }
+{{- end }}
 
 // EnsureCapacity is an operation that ensures the slice has at least the specified capacity.
 // 1. If the newCap <= cap then no change in capacity.
@@ -104,7 +117,11 @@ func (es {{ .structName }}) EnsureCapacity(newCap int) {
 func (es {{ .structName }}) AppendEmpty() {{ .elementName }} {
 	es.{{ .stateAccessor }}.AssertMutable()
 	*es.{{ .origAccessor }} = append(*es.{{ .origAccessor }}, {{- if .elementNullable }}internal.New{{ .elementOriginName }}(){{ else }}internal.{{ .elementOriginName }}{}{{ end }})
-	return es.At(es.Len() - 1)
+{{ if not .lazy -}}
+	return new{{ .elementName }}({{ if not .elementNullable }}&{{ end }}(*es.{{ .origAccessor }})[es.Len() - 1], es.{{ .stateAccessor }})
+{{- else -}}
+	return new{{ .elementName }}({{ if not .elementNullable }}&{{ end }}(*es.{{ .origAccessor }})[es.Len() - 1].{{ .elementName }}, es.{{ .stateAccessor }})
+{{- end }}
 }
 
 // MoveAndAppendTo moves all elements from the current slice and appends them to the dest.
