@@ -197,6 +197,6 @@ func genTestFailingUnmarshalProtoValuesGauge() map[string][]byte {
 func genTestEncodingValuesGauge() map[string]*Gauge {
 	return map[string]*Gauge{
 		"empty":           NewGauge(),
-		"DataPoints/test": {DataPoints: []*NumberDataPoint{{}, GenTestNumberDataPoint()}},
+		"DataPoints/test": {DataPoints: []NumberDataPoint{{}, *GenTestNumberDataPoint()}},
 	}
 }

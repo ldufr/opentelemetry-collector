@@ -88,7 +88,7 @@ func TestSummaryDataPoint_Sum(t *testing.T) {
 func TestSummaryDataPoint_QuantileValues(t *testing.T) {
 	ms := NewSummaryDataPoint()
 	assert.Equal(t, NewSummaryDataPointValueAtQuantileSlice(), ms.QuantileValues())
-	ms.orig.QuantileValues = internal.GenTestSummaryDataPointValueAtQuantilePtrSlice()
+	ms.orig.QuantileValues = internal.GenTestSummaryDataPointValueAtQuantileSlice()
 	assert.Equal(t, generateTestSummaryDataPointValueAtQuantileSlice(), ms.QuantileValues())
 }
 

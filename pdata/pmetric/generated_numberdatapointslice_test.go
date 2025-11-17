@@ -8,7 +8,6 @@ package pmetric
 
 import (
 	"testing"
-	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 
@@ -18,7 +17,7 @@ import (
 func TestNumberDataPointSlice(t *testing.T) {
 	es := NewNumberDataPointSlice()
 	assert.Equal(t, 0, es.Len())
-	es = newNumberDataPointSlice(&[]*internal.NumberDataPoint{}, internal.NewState())
+	es = newNumberDataPointSlice(&[]internal.NumberDataPoint{}, internal.NewState())
 	assert.Equal(t, 0, es.Len())
 
 	emptyVal := NewNumberDataPoint()
@@ -26,7 +25,7 @@ func TestNumberDataPointSlice(t *testing.T) {
 	for i := 0; i < 7; i++ {
 		es.AppendEmpty()
 		assert.Equal(t, emptyVal, es.At(i))
-		(*es.orig)[i] = internal.GenTestNumberDataPoint()
+		(*es.orig)[i] = *internal.GenTestNumberDataPoint()
 		assert.Equal(t, testVal, es.At(i))
 	}
 	assert.Equal(t, 7, es.Len())
@@ -35,7 +34,7 @@ func TestNumberDataPointSlice(t *testing.T) {
 func TestNumberDataPointSliceReadOnly(t *testing.T) {
 	sharedState := internal.NewState()
 	sharedState.MarkReadOnly()
-	es := newNumberDataPointSlice(&[]*internal.NumberDataPoint{}, sharedState)
+	es := newNumberDataPointSlice(&[]internal.NumberDataPoint{}, sharedState)
 	assert.Equal(t, 0, es.Len())
 	assert.Panics(t, func() { es.AppendEmpty() })
 	assert.Panics(t, func() { es.EnsureCapacity(2) })
@@ -143,24 +142,8 @@ func TestNumberDataPointSliceAll(t *testing.T) {
 	assert.Equal(t, ms.Len(), c, "All elements should have been visited")
 }
 
-func TestNumberDataPointSlice_Sort(t *testing.T) {
-	es := generateTestNumberDataPointSlice()
-	es.Sort(func(a, b NumberDataPoint) bool {
-		return uintptr(unsafe.Pointer(a.orig)) < uintptr(unsafe.Pointer(b.orig))
-	})
-	for i := 1; i < es.Len(); i++ {
-		assert.Less(t, uintptr(unsafe.Pointer(es.At(i-1).orig)), uintptr(unsafe.Pointer(es.At(i).orig)))
-	}
-	es.Sort(func(a, b NumberDataPoint) bool {
-		return uintptr(unsafe.Pointer(a.orig)) > uintptr(unsafe.Pointer(b.orig))
-	})
-	for i := 1; i < es.Len(); i++ {
-		assert.Greater(t, uintptr(unsafe.Pointer(es.At(i-1).orig)), uintptr(unsafe.Pointer(es.At(i).orig)))
-	}
-}
-
 func generateTestNumberDataPointSlice() NumberDataPointSlice {
 	ms := NewNumberDataPointSlice()
-	*ms.orig = internal.GenTestNumberDataPointPtrSlice()
+	*ms.orig = internal.GenTestNumberDataPointSlice()
 	return ms
 }

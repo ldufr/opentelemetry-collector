@@ -201,7 +201,7 @@ func genTestFailingUnmarshalProtoValuesSum() map[string][]byte {
 func genTestEncodingValuesSum() map[string]*Sum {
 	return map[string]*Sum{
 		"empty":                       NewSum(),
-		"DataPoints/test":             {DataPoints: []*NumberDataPoint{{}, GenTestNumberDataPoint()}},
+		"DataPoints/test":             {DataPoints: []NumberDataPoint{{}, *GenTestNumberDataPoint()}},
 		"AggregationTemporality/test": {AggregationTemporality: AggregationTemporality(13)},
 		"IsMonotonic/test":            {IsMonotonic: true},
 	}
