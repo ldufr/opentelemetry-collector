@@ -107,6 +107,7 @@ var metricsData = &messageStruct{
 var resourceMetricsSlice = &messageSlice{
 	structName:      "ResourceMetricsSlice",
 	elementNullable: false,
+	lazy:            true,
 	element:         resourceMetrics,
 }
 
@@ -147,6 +148,7 @@ var resourceMetrics = &messageStruct{
 var scopeMetricsSlice = &messageSlice{
 	structName:      "ScopeMetricsSlice",
 	elementNullable: false,
+	lazy:            true,
 	element:         scopeMetrics,
 }
 
