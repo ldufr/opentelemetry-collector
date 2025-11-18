@@ -98,7 +98,7 @@ func (es MetricSlice) EnsureCapacity(newCap int) {
 func (es MetricSlice) AppendEmpty() Metric {
 	es.state.AssertMutable()
 	*es.orig = append(*es.orig, internal.Metric{})
-	return es.At(es.Len() - 1)
+	return newMetric(&(*es.orig)[es.Len()-1], es.state)
 }
 
 // MoveAndAppendTo moves all elements from the current slice and appends them to the dest.

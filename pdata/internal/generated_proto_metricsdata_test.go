@@ -197,6 +197,6 @@ func genTestFailingUnmarshalProtoValuesMetricsData() map[string][]byte {
 func genTestEncodingValuesMetricsData() map[string]*MetricsData {
 	return map[string]*MetricsData{
 		"empty":                NewMetricsData(),
-		"ResourceMetrics/test": {ResourceMetrics: []ResourceMetrics{{}, *GenTestResourceMetrics()}},
+		"ResourceMetrics/test": {ResourceMetrics: []LazyResourceMetrics{{}, *GenTestLazyResourceMetrics()}},
 	}
 }

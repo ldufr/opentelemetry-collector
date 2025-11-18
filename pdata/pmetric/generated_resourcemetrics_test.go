@@ -52,7 +52,7 @@ func TestResourceMetrics_Resource(t *testing.T) {
 func TestResourceMetrics_ScopeMetrics(t *testing.T) {
 	ms := NewResourceMetrics()
 	assert.Equal(t, NewScopeMetricsSlice(), ms.ScopeMetrics())
-	ms.orig.ScopeMetrics = internal.GenTestScopeMetricsSlice()
+	ms.orig.ScopeMetrics = internal.GenTestLazyScopeMetricsSlice()
 	assert.Equal(t, generateTestScopeMetricsSlice(), ms.ScopeMetrics())
 }
 

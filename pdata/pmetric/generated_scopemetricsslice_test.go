@@ -17,7 +17,7 @@ import (
 func TestScopeMetricsSlice(t *testing.T) {
 	es := NewScopeMetricsSlice()
 	assert.Equal(t, 0, es.Len())
-	es = newScopeMetricsSlice(&[]internal.ScopeMetrics{}, internal.NewState())
+	es = newScopeMetricsSlice(&[]internal.LazyScopeMetrics{}, internal.NewState())
 	assert.Equal(t, 0, es.Len())
 
 	emptyVal := NewScopeMetrics()
@@ -25,7 +25,7 @@ func TestScopeMetricsSlice(t *testing.T) {
 	for i := 0; i < 7; i++ {
 		es.AppendEmpty()
 		assert.Equal(t, emptyVal, es.At(i))
-		(*es.orig)[i] = *internal.GenTestScopeMetrics()
+		(*es.orig)[i] = *internal.GenTestLazyScopeMetrics()
 		assert.Equal(t, testVal, es.At(i))
 	}
 	assert.Equal(t, 7, es.Len())
@@ -34,7 +34,7 @@ func TestScopeMetricsSlice(t *testing.T) {
 func TestScopeMetricsSliceReadOnly(t *testing.T) {
 	sharedState := internal.NewState()
 	sharedState.MarkReadOnly()
-	es := newScopeMetricsSlice(&[]internal.ScopeMetrics{}, sharedState)
+	es := newScopeMetricsSlice(&[]internal.LazyScopeMetrics{}, sharedState)
 	assert.Equal(t, 0, es.Len())
 	assert.Panics(t, func() { es.AppendEmpty() })
 	assert.Panics(t, func() { es.EnsureCapacity(2) })
@@ -144,6 +144,6 @@ func TestScopeMetricsSliceAll(t *testing.T) {
 
 func generateTestScopeMetricsSlice() ScopeMetricsSlice {
 	ms := NewScopeMetricsSlice()
-	*ms.orig = internal.GenTestScopeMetricsSlice()
+	*ms.orig = internal.GenTestLazyScopeMetricsSlice()
 	return ms
 }
