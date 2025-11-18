@@ -8,7 +8,6 @@ package pmetric
 
 import (
 	"testing"
-	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 
@@ -18,7 +17,7 @@ import (
 func TestExponentialHistogramDataPointSlice(t *testing.T) {
 	es := NewExponentialHistogramDataPointSlice()
 	assert.Equal(t, 0, es.Len())
-	es = newExponentialHistogramDataPointSlice(&[]*internal.ExponentialHistogramDataPoint{}, internal.NewState())
+	es = newExponentialHistogramDataPointSlice(&[]internal.ExponentialHistogramDataPoint{}, internal.NewState())
 	assert.Equal(t, 0, es.Len())
 
 	emptyVal := NewExponentialHistogramDataPoint()
@@ -26,7 +25,7 @@ func TestExponentialHistogramDataPointSlice(t *testing.T) {
 	for i := 0; i < 7; i++ {
 		es.AppendEmpty()
 		assert.Equal(t, emptyVal, es.At(i))
-		(*es.orig)[i] = internal.GenTestExponentialHistogramDataPoint()
+		(*es.orig)[i] = *internal.GenTestExponentialHistogramDataPoint()
 		assert.Equal(t, testVal, es.At(i))
 	}
 	assert.Equal(t, 7, es.Len())
@@ -35,7 +34,7 @@ func TestExponentialHistogramDataPointSlice(t *testing.T) {
 func TestExponentialHistogramDataPointSliceReadOnly(t *testing.T) {
 	sharedState := internal.NewState()
 	sharedState.MarkReadOnly()
-	es := newExponentialHistogramDataPointSlice(&[]*internal.ExponentialHistogramDataPoint{}, sharedState)
+	es := newExponentialHistogramDataPointSlice(&[]internal.ExponentialHistogramDataPoint{}, sharedState)
 	assert.Equal(t, 0, es.Len())
 	assert.Panics(t, func() { es.AppendEmpty() })
 	assert.Panics(t, func() { es.EnsureCapacity(2) })
@@ -143,24 +142,8 @@ func TestExponentialHistogramDataPointSliceAll(t *testing.T) {
 	assert.Equal(t, ms.Len(), c, "All elements should have been visited")
 }
 
-func TestExponentialHistogramDataPointSlice_Sort(t *testing.T) {
-	es := generateTestExponentialHistogramDataPointSlice()
-	es.Sort(func(a, b ExponentialHistogramDataPoint) bool {
-		return uintptr(unsafe.Pointer(a.orig)) < uintptr(unsafe.Pointer(b.orig))
-	})
-	for i := 1; i < es.Len(); i++ {
-		assert.Less(t, uintptr(unsafe.Pointer(es.At(i-1).orig)), uintptr(unsafe.Pointer(es.At(i).orig)))
-	}
-	es.Sort(func(a, b ExponentialHistogramDataPoint) bool {
-		return uintptr(unsafe.Pointer(a.orig)) > uintptr(unsafe.Pointer(b.orig))
-	})
-	for i := 1; i < es.Len(); i++ {
-		assert.Greater(t, uintptr(unsafe.Pointer(es.At(i-1).orig)), uintptr(unsafe.Pointer(es.At(i).orig)))
-	}
-}
-
 func generateTestExponentialHistogramDataPointSlice() ExponentialHistogramDataPointSlice {
 	ms := NewExponentialHistogramDataPointSlice()
-	*ms.orig = internal.GenTestExponentialHistogramDataPointPtrSlice()
+	*ms.orig = internal.GenTestExponentialHistogramDataPointSlice()
 	return ms
 }

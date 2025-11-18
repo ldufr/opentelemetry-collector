@@ -44,7 +44,7 @@ func TestMetrics_CopyTo(t *testing.T) {
 func TestMetrics_ResourceMetrics(t *testing.T) {
 	ms := NewMetrics()
 	assert.Equal(t, NewResourceMetricsSlice(), ms.ResourceMetrics())
-	ms.getOrig().ResourceMetrics = internal.GenTestResourceMetricsPtrSlice()
+	ms.getOrig().ResourceMetrics = internal.GenTestResourceMetricsSlice()
 	assert.Equal(t, generateTestResourceMetricsSlice(), ms.ResourceMetrics())
 }
 

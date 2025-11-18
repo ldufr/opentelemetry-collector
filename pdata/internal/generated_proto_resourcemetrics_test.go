@@ -204,8 +204,8 @@ func genTestEncodingValuesResourceMetrics() map[string]*ResourceMetrics {
 	return map[string]*ResourceMetrics{
 		"empty":                       NewResourceMetrics(),
 		"Resource/test":               {Resource: *GenTestResource()},
-		"ScopeMetrics/test":           {ScopeMetrics: []*ScopeMetrics{{}, GenTestScopeMetrics()}},
+		"ScopeMetrics/test":           {ScopeMetrics: []ScopeMetrics{{}, *GenTestScopeMetrics()}},
 		"SchemaUrl/test":              {SchemaUrl: "test_schemaurl"},
-		"DeprecatedScopeMetrics/test": {DeprecatedScopeMetrics: []*ScopeMetrics{{}, GenTestScopeMetrics()}},
+		"DeprecatedScopeMetrics/test": {DeprecatedScopeMetrics: []ScopeMetrics{{}, *GenTestScopeMetrics()}},
 	}
 }

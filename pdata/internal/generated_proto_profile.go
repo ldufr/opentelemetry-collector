@@ -520,7 +520,7 @@ func (orig *Profile) UnmarshalProto(buf []byte) error {
 				return err
 			}
 			startPos := pos - length
-			orig.OriginalPayloadFormat = string(buf[startPos:pos])
+			orig.OriginalPayloadFormat = proto.YoloString(buf[startPos:pos])
 
 		case 10:
 			if wireType != proto.WireTypeLen {

@@ -8,7 +8,6 @@ package pmetric
 
 import (
 	"testing"
-	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 
@@ -18,7 +17,7 @@ import (
 func TestHistogramDataPointSlice(t *testing.T) {
 	es := NewHistogramDataPointSlice()
 	assert.Equal(t, 0, es.Len())
-	es = newHistogramDataPointSlice(&[]*internal.HistogramDataPoint{}, internal.NewState())
+	es = newHistogramDataPointSlice(&[]internal.HistogramDataPoint{}, internal.NewState())
 	assert.Equal(t, 0, es.Len())
 
 	emptyVal := NewHistogramDataPoint()
@@ -26,7 +25,7 @@ func TestHistogramDataPointSlice(t *testing.T) {
 	for i := 0; i < 7; i++ {
 		es.AppendEmpty()
 		assert.Equal(t, emptyVal, es.At(i))
-		(*es.orig)[i] = internal.GenTestHistogramDataPoint()
+		(*es.orig)[i] = *internal.GenTestHistogramDataPoint()
 		assert.Equal(t, testVal, es.At(i))
 	}
 	assert.Equal(t, 7, es.Len())
@@ -35,7 +34,7 @@ func TestHistogramDataPointSlice(t *testing.T) {
 func TestHistogramDataPointSliceReadOnly(t *testing.T) {
 	sharedState := internal.NewState()
 	sharedState.MarkReadOnly()
-	es := newHistogramDataPointSlice(&[]*internal.HistogramDataPoint{}, sharedState)
+	es := newHistogramDataPointSlice(&[]internal.HistogramDataPoint{}, sharedState)
 	assert.Equal(t, 0, es.Len())
 	assert.Panics(t, func() { es.AppendEmpty() })
 	assert.Panics(t, func() { es.EnsureCapacity(2) })
@@ -143,24 +142,8 @@ func TestHistogramDataPointSliceAll(t *testing.T) {
 	assert.Equal(t, ms.Len(), c, "All elements should have been visited")
 }
 
-func TestHistogramDataPointSlice_Sort(t *testing.T) {
-	es := generateTestHistogramDataPointSlice()
-	es.Sort(func(a, b HistogramDataPoint) bool {
-		return uintptr(unsafe.Pointer(a.orig)) < uintptr(unsafe.Pointer(b.orig))
-	})
-	for i := 1; i < es.Len(); i++ {
-		assert.Less(t, uintptr(unsafe.Pointer(es.At(i-1).orig)), uintptr(unsafe.Pointer(es.At(i).orig)))
-	}
-	es.Sort(func(a, b HistogramDataPoint) bool {
-		return uintptr(unsafe.Pointer(a.orig)) > uintptr(unsafe.Pointer(b.orig))
-	})
-	for i := 1; i < es.Len(); i++ {
-		assert.Greater(t, uintptr(unsafe.Pointer(es.At(i-1).orig)), uintptr(unsafe.Pointer(es.At(i).orig)))
-	}
-}
-
 func generateTestHistogramDataPointSlice() HistogramDataPointSlice {
 	ms := NewHistogramDataPointSlice()
-	*ms.orig = internal.GenTestHistogramDataPointPtrSlice()
+	*ms.orig = internal.GenTestHistogramDataPointSlice()
 	return ms
 }

@@ -8,7 +8,6 @@ package pmetric
 
 import (
 	"testing"
-	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 
@@ -18,7 +17,7 @@ import (
 func TestResourceMetricsSlice(t *testing.T) {
 	es := NewResourceMetricsSlice()
 	assert.Equal(t, 0, es.Len())
-	es = newResourceMetricsSlice(&[]*internal.ResourceMetrics{}, internal.NewState())
+	es = newResourceMetricsSlice(&[]internal.ResourceMetrics{}, internal.NewState())
 	assert.Equal(t, 0, es.Len())
 
 	emptyVal := NewResourceMetrics()
@@ -26,7 +25,7 @@ func TestResourceMetricsSlice(t *testing.T) {
 	for i := 0; i < 7; i++ {
 		es.AppendEmpty()
 		assert.Equal(t, emptyVal, es.At(i))
-		(*es.orig)[i] = internal.GenTestResourceMetrics()
+		(*es.orig)[i] = *internal.GenTestResourceMetrics()
 		assert.Equal(t, testVal, es.At(i))
 	}
 	assert.Equal(t, 7, es.Len())
@@ -35,7 +34,7 @@ func TestResourceMetricsSlice(t *testing.T) {
 func TestResourceMetricsSliceReadOnly(t *testing.T) {
 	sharedState := internal.NewState()
 	sharedState.MarkReadOnly()
-	es := newResourceMetricsSlice(&[]*internal.ResourceMetrics{}, sharedState)
+	es := newResourceMetricsSlice(&[]internal.ResourceMetrics{}, sharedState)
 	assert.Equal(t, 0, es.Len())
 	assert.Panics(t, func() { es.AppendEmpty() })
 	assert.Panics(t, func() { es.EnsureCapacity(2) })
@@ -143,24 +142,8 @@ func TestResourceMetricsSliceAll(t *testing.T) {
 	assert.Equal(t, ms.Len(), c, "All elements should have been visited")
 }
 
-func TestResourceMetricsSlice_Sort(t *testing.T) {
-	es := generateTestResourceMetricsSlice()
-	es.Sort(func(a, b ResourceMetrics) bool {
-		return uintptr(unsafe.Pointer(a.orig)) < uintptr(unsafe.Pointer(b.orig))
-	})
-	for i := 1; i < es.Len(); i++ {
-		assert.Less(t, uintptr(unsafe.Pointer(es.At(i-1).orig)), uintptr(unsafe.Pointer(es.At(i).orig)))
-	}
-	es.Sort(func(a, b ResourceMetrics) bool {
-		return uintptr(unsafe.Pointer(a.orig)) > uintptr(unsafe.Pointer(b.orig))
-	})
-	for i := 1; i < es.Len(); i++ {
-		assert.Greater(t, uintptr(unsafe.Pointer(es.At(i-1).orig)), uintptr(unsafe.Pointer(es.At(i).orig)))
-	}
-}
-
 func generateTestResourceMetricsSlice() ResourceMetricsSlice {
 	ms := NewResourceMetricsSlice()
-	*ms.orig = internal.GenTestResourceMetricsPtrSlice()
+	*ms.orig = internal.GenTestResourceMetricsSlice()
 	return ms
 }

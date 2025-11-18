@@ -197,6 +197,6 @@ func genTestFailingUnmarshalProtoValuesExportMetricsServiceRequest() map[string]
 func genTestEncodingValuesExportMetricsServiceRequest() map[string]*ExportMetricsServiceRequest {
 	return map[string]*ExportMetricsServiceRequest{
 		"empty":                NewExportMetricsServiceRequest(),
-		"ResourceMetrics/test": {ResourceMetrics: []*ResourceMetrics{{}, GenTestResourceMetrics()}},
+		"ResourceMetrics/test": {ResourceMetrics: []ResourceMetrics{{}, *GenTestResourceMetrics()}},
 	}
 }

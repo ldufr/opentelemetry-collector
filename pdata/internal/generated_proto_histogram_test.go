@@ -199,7 +199,7 @@ func genTestFailingUnmarshalProtoValuesHistogram() map[string][]byte {
 func genTestEncodingValuesHistogram() map[string]*Histogram {
 	return map[string]*Histogram{
 		"empty":                       NewHistogram(),
-		"DataPoints/test":             {DataPoints: []*HistogramDataPoint{{}, GenTestHistogramDataPoint()}},
+		"DataPoints/test":             {DataPoints: []HistogramDataPoint{{}, *GenTestHistogramDataPoint()}},
 		"AggregationTemporality/test": {AggregationTemporality: AggregationTemporality(13)},
 	}
 }
