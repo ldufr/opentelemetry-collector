@@ -154,7 +154,6 @@ func (orig *Lazy{{ .messageName }}) FinishUnmarshal(buf *{{ .messageName }}) (*{
         return &orig.{{ .messageName }}, nil
     }
     err := buf.UnmarshalProto(orig.bytes)
-    orig.bytes = []byte{}
     return buf, err
 }
 
